@@ -1,0 +1,29 @@
+// @version=5
+indicator("Katlego CRT Manual - XAUUSD", overlay=true)
+supplyHigh = input.float(4191.0, "Supply High")
+supplyLow = input.float(4186.0, "Supply Low")
+demandHigh = input.float(4154.0, "Demand High")
+demandLow = input.float(4151.0, "Demand Low")
+h1HighPrev = request.security(syminfo.tickerid, "60", high[1])
+h1LowPrev = request.security(syminfo.tickerid, "60", low[1])
+var box supplyBox = na
+var box demandBox = na
+if barstate.islast
+    supplyBox := box.new(bar_index-50, supplyHigh, bar_index+20, supplyLow, bgcolor=color.new(color.red, 70), border_color=color.red, border_width=2)
+    demandBox := box.new(bar_index-50, demandHigh, bar_index+20, demandLow, bgcolor=color.new(color.green, 70), border_color=color.green, border_width=2)
+plot(h1HighPrev, "H1 Prev High", color=color.orange, style=plot.style_linebr, linewidth=2)
+plot(h1LowPrev, "H1 Prev Low", color=color.blue, style=plot.style_linebr, linewidth=2)
+m5Open1 = request.security(syminfo.tickerid, "5", open[1])
+m5Close1 = request.security(syminfo.tickerid, "5", close[1])
+m5Open2 = request.security(syminfo.tickerid, "5", open[2])
+m5Close2 = request.security(syminfo.tickerid, "5", close[2])
+bullEng = m5Close1 > m5Open1 and m5Close2 < m5Open2 and m5Close1 > m5Open2
+bearEng = m5Close1 < m5Open1 and m5Close2 > m5Open2 and m5Close1 < m5Open2
+inDemand = close >= demandLow and close <= demandHigh+3
+inSupply = close <= supplyHigh and close >= supplyLow-3
+buySignal = inDemand and bullEng
+sellSignal = inSupply and bearEng
+plotshape(buySignal, title="BUY CRT", style=shape.labelup, location=location.belowbar, color=color.green, text="BUY 0.02 lot", textcolor=color.white, size=size.small)
+plotshape(sellSignal, title="SELL CRT", style=shape.labeldown, location=location.abovebar, color=color.red, text="SELL 0.02 lot", textcolor=color.white, size=size.small)
+alertcondition(buySignal, title="Katlego CRT BUY", message="KATLEGO CRT BUY ALERT: XAUUSD in DEMAND 4151-4154 + M5 Bull Engulfing! Buy 0.02 lot SL $3 TP $6")
+alertcondition(sellSignal, title="Katlego CRT SELL", message="KATLEGO CRT SELL ALERT: XAUUSD in SUPPLY 4186-4191 + M5 Bear Engulfing! Sell 0.02 lot SL $3 TP $6")
